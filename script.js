@@ -167,42 +167,81 @@ function playGame() {
         });
 
     } else if (method === 'data-uri') {
-        // Fetch → inject <base href> → base64 encode → copy to clipboard → show splash
-        setStatus('FETCHING...');
-        const baseUrl = absUrl.substring(0, absUrl.lastIndexOf('/') + 1);
-        _fetchWithProgress(absUrl).then(html => {
-            showLoading('ENCODING TO BASE64...');
-            setTimeout(() => {
-                try {
-                    // Inject <base href> so all relative asset paths resolve correctly
-                    const baseTag = '<base href="' + baseUrl + '">';
-                    let patched;
-                    if (/<head[\s>]/i.test(html)) {
-                        patched = html.replace(/(<head[^>]*>)/i, '$1\n' + baseTag);
-                    } else if (/<html[\s>]/i.test(html)) {
-                        patched = html.replace(/(<html[^>]*>)/i, '$1\n<head>' + baseTag + '</head>');
-                    } else {
-                        patched = baseTag + html;
-                    }
-                    const b64     = btoa(unescape(encodeURIComponent(patched)));
-                    const dataUri = 'data:text/html;base64,' + b64;
-                    hideLoading();
-                    navigator.clipboard.writeText(dataUri).then(() => {
-                        _showDataUriSplash(true);
-                    }).catch(() => {
-                        _showDataUriSplash(false);
-                    });
-                    setStatus('DATA URI COPIED — PASTE IN ADDRESS BAR');
-                } catch (e) {
-                    hideLoading();
-                    showToast('Encode failed: ' + e.message, true);
-                    setStatus('ENCODE ERROR');
-                }
-            }, 60);
-        }).catch(err => {
-            showToast('Fetch failed: ' + err.message, true);
-            setStatus('FETCH ERROR');
-        });
+        // Build a self-contained loader page, encode it as a data: URI, and copy to clipboard.
+        // When pasted into the address bar, the page fetches the game from the CDN itself —
+        // no pre-fetching needed, works from any context.
+        try {
+            const folder  = _selectedVersion.split('/').map(encodeURIComponent).join('/');
+            const cdnBase = 'https://raw.githack.com/xXJ0NXx/GX-Launcher/main/' + folder + '/';
+            const gameUrl = cdnBase + 'index.html';
+
+            const loaderHtml = `<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<base href="${cdnBase}">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:monospace;color:#fff}
+#s{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#0a0a0a}
+#bar-wrap{width:320px;height:6px;background:#222;border-radius:3px;overflow:hidden}
+#bar{height:100%;width:0%;background:#cc0000;border-radius:3px;transition:width 0.1s}
+#msg{font-size:13px;color:#aaa;letter-spacing:0.1em}
+</style>
+</head><body>
+<div id="s">
+  <div id="msg">FETCHING GAME...</div>
+  <div id="bar-wrap"><div id="bar"></div></div>
+</div>
+<script>
+(async()=>{
+  const url='${gameUrl}';
+  const bar=document.getElementById('bar');
+  const msg=document.getElementById('msg');
+  try{
+    const res=await fetch(url);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const len=+res.headers.get('content-length')||0;
+    const reader=res.body.getReader();
+    const chunks=[];let got=0;
+    while(true){
+      const{done,value}=await reader.read();
+      if(done)break;
+      chunks.push(value);got+=value.length;
+      if(len)bar.style.width=(5+Math.round(got/len*90))+'%';
+    }
+    bar.style.width='100%';
+    msg.textContent='LAUNCHING...';
+    const merged=new Uint8Array(got);let pos=0;
+    for(const c of chunks){merged.set(c,pos);pos+=c.length;}
+    const html=new TextDecoder().decode(merged);
+    const baseTag='<base href="${cdnBase}">';
+    let patched;
+    if(/<head[\s>]/i.test(html)){patched=html.replace(/(<head[^>]*>)/i,'$1\\n'+baseTag);}
+    else if(/<html[\s>]/i.test(html)){patched=html.replace(/(<html[^>]*>)/i,'$1\\n<head>'+baseTag+'</head>');}
+    else{patched=baseTag+html;}
+    document.open();
+    document.write(patched);
+    document.close();
+  }catch(e){
+    msg.textContent='ERROR: '+e.message;
+    bar.style.background='#aa0000';
+  }
+})();
+</script>
+</body></html>`;
+
+            const b64     = btoa(unescape(encodeURIComponent(loaderHtml)));
+            const dataUri = 'data:text/html;base64,' + b64;
+            navigator.clipboard.writeText(dataUri).then(() => {
+                _showDataUriSplash(true);
+            }).catch(() => {
+                _showDataUriSplash(false);
+            });
+            setStatus('DATA URI COPIED — PASTE IN ADDRESS BAR');
+        } catch (e) {
+            showToast('Failed to generate URI: ' + e.message, true);
+            setStatus('URI ERROR');
+        }
     }
 }
 
