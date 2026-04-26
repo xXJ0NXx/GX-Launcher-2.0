@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GX-Launcher 2.0</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+
+<div class="launcher">
+
+  <!-- TITLE BAR -->
+  <div class="title-bar">
+    <div class="title-logo">
+      <div class="title-dot"></div>
+      GX-LAUNCHER <span class="ver">v2.0</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="profile">
+        <div class="profile-label">Player</div>
+        <span class="profile-name" id="profile-name">Player</span>
+        <div class="profile-status"><div class="status-dot"></div>ONLINE</div>
+      </div>
+      <nav>
+        <div class="nav-section-label">Navigation</div>
+        <div class="nav-item" onclick="redirectToNews()">
+          <svg class="nav-svg" viewBox="0 0 24 24"><path d="M4 4h16v14a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="9" y1="4" x2="9" y2="9"/></svg>
+          Update Log
+        </div>
+        <div class="nav-item selected">
+          <svg class="nav-svg" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="13" rx="1"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+          Game
+        </div>
+        <div class="nav-item" onclick="redirectToClients()">
+          <svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+          Clients
+        </div>
+        <div class="nav-item" onclick="redirectToOtherClients()">
+          <svg class="nav-svg" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Beta Clients
+        </div>
+        <div class="nav-item" onclick="redirectToServers()">
+          <svg class="nav-svg" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="5" rx="1"/><rect x="2" y="10" width="20" height="5" rx="1"/><rect x="2" y="17" width="20" height="5" rx="1"/></svg>
+          Servers
+        </div>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="nav-item" onclick="redirectToSettings()">
+                  <svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Launcher Settings
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN PANEL -->
+    <div class="main-panel">
+      <div class="top-bar">
+        <div class="game-title">GX-LAUNCHER <span>// GAME</span></div>
+        <div class="breadcrumb">HOME / GAME</div>
+      </div>
+
+      <div class="main-content">
+        <!-- Background art -->
+        <img src="./Resources/fixed2.png" alt="" class="hero-image" onerror="this.style.display='none'">
+        <div class="hero-overlay"></div>
+      </div>
+
+      <!-- LAUNCH BAR -->
+      <div class="launch-bar">
+
+        <!-- Version dropdown -->
+        <div class="version-wrapper">
+          <div class="version-select" id="version-select" onclick="toggleVersionDropdown()">
+            <span id="version-label">Select Version</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="version-dropdown" id="version-dropdown">
+
+            <div class="version-group-label">Release</div>
+            <div class="version-option" onclick="selectVersion('1.12.2-wasm','1.12.2 WASM (u3)',true)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>1.12.2 (u3)</span><span class="version-badge wasm">WASM</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('1.12.2','1.12.2 (u3)',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>1.12.2 (u3)</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('1.8.8-wasm','1.8.8 WASM (u53)',true)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>1.8.8 (u53)</span><span class="version-badge wasm">WASM</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('1.8.8','1.8.8 (u53)',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>1.8.8 (u53)</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('1.7.10','1.7.10 (u0)',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>1.7.10 (u0)</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('1.6.4','1.6.4',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>1.6.4</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('1.5.2','1.5.2 (sp2.01)',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>1.5.2 (sp2.01)</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('1.4.7-wasm','1.4.7 WASM',true)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>1.4.7</span><span class="version-badge wasm">WASM</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('1.3.2','1.3.2',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>1.3.2</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('1.2.5-wasm','1.2.5 WASM',true)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>1.2.5</span><span class="version-badge wasm">WASM</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('1.2.5','1.2.5',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>1.2.5</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('1.1','1.1',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>1.1</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('1.0','1.0',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>1.0</span>
+            </div>
+
+            <div class="version-group-label">Beta</div>
+            <div class="version-option" onclick="selectVersion('beta-1.8.1-wasm','Beta 1.8.1 WASM',true)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>Beta 1.8.1</span><span class="version-badge wasm">WASM</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('beta-1.8.1','Beta 1.8.1',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>Beta 1.8.1</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('beta-1.7.3','Beta 1.7.3',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>Beta 1.7.3</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('beta-1.6.4','Beta 1.6.4',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>Beta 1.6.4</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('beta-1.5','Beta 1.5',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>Beta 1.5</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('beta-1.4','Beta 1.4',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>Beta 1.4</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('beta-1.3','Beta 1.3',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>Beta 1.3</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('beta-1.2','Beta 1.2',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>Beta 1.2</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('beta-1.1','Beta 1.1',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>Beta 1.1</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('beta-1.0','Beta 1.0',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>Beta 1.0</span>
+            </div>
+
+            <div class="version-group-label">Alpha / Classic</div>
+            <div class="version-option" onclick="selectVersion('alpha-1.2.6','Alpha 1.2.6',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>Alpha 1.2.6</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('infdev-wasm','Infdev WASM',true)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>Infdev</span><span class="version-badge wasm">WASM</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('indev','Indev',false)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>Indev</span>
+            </div>
+            <div class="version-option" onclick="selectVersion('classic-0.3.0-wasm','Classic 0.3.0 WASM',true)">
+              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <span>Classic 0.3.0</span><span class="version-badge wasm">WASM</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Mode badge (click to go to settings) -->
+        <div class="launch-mode-badge" onclick="redirectToSettings()" title="Change in Settings">
+          MODE: <span id="mode-badge-text">REGULAR</span>
+        </div>
+
+        <button class="play-button" id="play-btn" onclick="playGame()" disabled>LAUNCH</button>
+      </div>
+
+      <div class="bottom-bar">
+        <div class="status-line" id="status-line">READY</div>
+        <div class="credit">Built by Jon Stearns</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-text" id="loading-text">FETCHING...</div>
+  <div class="loading-bar-wrap"><div class="loading-bar" id="loading-bar"></div></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+</body>
+</html>
