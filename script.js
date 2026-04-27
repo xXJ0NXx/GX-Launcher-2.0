@@ -172,23 +172,13 @@ function playGame() {
     const popupFeatures = 'width=1280,height=720,toolbar=0,menubar=0,location=0,status=0';
     const wispOn = isWispEnabled();
 
-    // For modes that don't fetch HTML, WISP injection requires fetching first
-    if (wispOn && method === 'regular') {
-        // Fall through to fetch + write to about:blank since we need to inject
-        setStatus('WISP: INJECTING...');
-        _fetchWithProgress(absUrl).then(html => injectWispIntoHtml(html)).then(html => {
-            const win = window.open('', '_blank');
-            if (!win) { showToast('Popup blocked.', true); return; }
-            win.document.open();
-            win.document.write(html);
-            win.document.close();
-            setStatus('LAUNCHED WITH <span class="hl">WISP</span>');
-        }).catch(err => {
-            showToast('Wisp inject failed: ' + err.message, true);
-            setStatus('WISP ERROR');
-        });
+    // Regular mode always navigates directly to the URL
+    if (method === 'regular') {
+        window.open(absUrl, '_blank');
+        setStatus('LAUNCHED');
         return;
     }
+
 
     if (wispOn && method === 'popup') {
         setStatus('WISP: INJECTING...');
@@ -205,11 +195,11 @@ function playGame() {
         return;
     }
 
-    // Standard (non-WISP) launches
-    if (method === 'regular') {
-        window.open(absUrl, '_blank');
 
-    } else if (method === 'popup') {
+
+
+
+    if (method === 'popup') {
         const w = window.open(absUrl, '_blank', popupFeatures);
         if (!w) showToast('Popup blocked — allow popups for this site.', true);
 
@@ -449,6 +439,25 @@ function saveUsername() {
     showToast('Username saved: ' + val);
 }
 
+function applyUiScale(scale) {
+    document.documentElement.style.setProperty('--ui-scale', scale);
+    const label = document.getElementById('ui-scale-label');
+    if (label) label.textContent = Math.round(scale * 100) + '%';
+}
+
+function saveUiScale(scale) {
+    applyUiScale(scale);
+    setCookie('uiScale', scale, 365);
+}
+
+function loadUiScale() {
+    const saved = parseFloat(getCookie('uiScale'));
+    const scale = (!isNaN(saved) && saved >= 0.7 && saved <= 1.5) ? saved : 1;
+    applyUiScale(scale);
+    const slider = document.getElementById('ui-scale-slider');
+    if (slider) slider.value = scale;
+}
+
 function applyThemeFromSwatch(name, el) {
     applyTheme(name);
     showToast('Theme: ' + name);
@@ -544,4 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (urlRow) urlRow.style.opacity = wispEnabled ? '1' : '0.45';
     if (urlInput) urlInput.value = getWispUrl();
+
+    // Restore UI scale
+    loadUiScale();
 });

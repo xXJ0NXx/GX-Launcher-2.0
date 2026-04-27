@@ -6,6 +6,7 @@
 
 /* ===== THEME VARIABLES ===== */
 :root {
+  --ui-scale:    1;
   --accent:      #cc0000;
   --accent-hi:   #ff2222;
   --accent-dim:  #7a0000;
@@ -116,6 +117,7 @@ body::before {
   background: var(--bg2);
   position: relative;
   overflow: hidden;
+  zoom: var(--ui-scale);
 }
 
 /* ===== TITLE BAR ===== */

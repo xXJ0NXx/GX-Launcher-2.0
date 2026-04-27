@@ -187,6 +187,30 @@
           </div>
         </div>
 
+        <!-- TEXT SIZE -->
+        <div class="settings-section">
+          <div class="settings-section-title">Text Size</div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">UI Scale</div>
+              <div class="settings-desc">Adjusts the size of all text and UI elements across the launcher.</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;min-width:220px;">
+              <input
+                id="ui-scale-slider"
+                type="range"
+                min="0.7"
+                max="1.5"
+                step="0.05"
+                value="1"
+                style="flex:1;accent-color:var(--accent);cursor:pointer;"
+                oninput="saveUiScale(parseFloat(this.value))"
+              >
+              <span id="ui-scale-label" style="font-family:var(--mono);font-size:11px;color:var(--accent);min-width:36px;text-align:right;letter-spacing:0.08em;">100%</span>
+            </div>
+          </div>
+        </div>
+
         <!-- THEME -->
         <div class="settings-section">
           <div class="settings-section-title">Theme</div>
@@ -279,7 +303,7 @@
 
           <!-- Compatibility note -->
           <div class="wisp-compat-note">
-            <span>Compatible clients:</span> EaglercraftX 1.8 and other EaglercraftX .html clients that use the standard <code>eaglercraftXOpts</code> / WebSocket API. Not compatible with Data URI launch mode.
+            <span>Compatible clients:</span> EaglercraftX and other clients based on EaglercraftX that use the standard <code>eaglercraftXOpts</code> / WebSocket API. Not compatible with Data URI launch mode.
           </div>
         </div>
 
