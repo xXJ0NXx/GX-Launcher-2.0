@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GX-Launcher 2.0</title>
-  <link rel="icon" type="image/png" href="favicon.png">
+  <title>GX-Launcher</title>
+  <link rel="main" type="image/png" href="favmain.png">
   <link rel="stylesheet" href="styles.css">
   <script src="script.js" defer></script>
 </head>
@@ -17,6 +17,11 @@
     <div class="title-logo">
       <div class="title-dot"></div>
       GX-LAUNCHER <span class="ver">v2.0</span>
+    </div>
+    <div class="title-controls">
+      <div class="wdot min"></div>
+      <div class="wdot max"></div>
+      <div class="wdot close"></div>
     </div>
   </div>
 
@@ -50,6 +55,19 @@
         <div class="nav-item" onclick="redirectToServers()">
           <svg class="nav-svg" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="5" rx="1"/><rect x="2" y="10" width="20" height="5" rx="1"/><rect x="2" y="17" width="20" height="5" rx="1"/></svg>
           Servers
+        </div>
+        <div class="nav-section-label" style="margin-top:6px;">System</div>
+        <div class="nav-item" id="modMakerItem" style="display:none;" onclick="redirectToMods()">
+          <svg class="nav-svg" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+          Mod Maker
+        </div>
+        <div class="nav-item" id="apiItem" style="display:none;" onclick="openBlankPage('api.html')">
+          <svg class="nav-svg" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          API
+        </div>
+        <div class="nav-item" onclick="redirectToSettings()">
+          <svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Settings
         </div>
       </nav>
       <div class="sidebar-bottom">
@@ -86,115 +104,115 @@
 
             <div class="version-group-label">Release</div>
             <div class="version-option" onclick="selectVersion('1.12.2-wasm','1.12.2 WASM (u3)',true)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>1.12.2 (u3)</span><span class="version-badge wasm">WASM</span>
             </div>
             <div class="version-option" onclick="selectVersion('1.12.2','1.12.2 (u3)',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>1.12.2 (u3)</span>
             </div>
-            <div class="version-option" onclick="selectVersion('1.8.8-wasm','1.8.8 WASM (u53)',true)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
-              <span>1.8.8 (u53)</span><span class="version-badge wasm">WASM</span>
+            <div class="version-option" onclick="selectVersion('1.8.8-wasm','1.8.8 WASM (u54)',true)">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
+              <span>1.8.8 (u54-unoffical)</span><span class="version-badge wasm">WASM</span>
             </div>
-            <div class="version-option" onclick="selectVersion('1.8.8','1.8.8 (u53)',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
-              <span>1.8.8 (u53)</span>
+            <div class="version-option" onclick="selectVersion('1.8.8','1.8.8 (u54)',false)">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
+              <span>1.8.8 (u54-unoffical)</span>
             </div>
             <div class="version-option" onclick="selectVersion('1.7.10','1.7.10 (u0)',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>1.7.10 (u0)</span>
             </div>
             <div class="version-option" onclick="selectVersion('1.6.4','1.6.4',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>1.6.4</span>
             </div>
             <div class="version-option" onclick="selectVersion('1.5.2','1.5.2 (sp2.01)',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>1.5.2 (sp2.01)</span>
             </div>
             <div class="version-option" onclick="selectVersion('1.4.7-wasm','1.4.7 WASM',true)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>1.4.7</span><span class="version-badge wasm">WASM</span>
             </div>
             <div class="version-option" onclick="selectVersion('1.3.2','1.3.2',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>1.3.2</span>
             </div>
             <div class="version-option" onclick="selectVersion('1.2.5-wasm','1.2.5 WASM',true)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>1.2.5</span><span class="version-badge wasm">WASM</span>
             </div>
             <div class="version-option" onclick="selectVersion('1.2.5','1.2.5',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>1.2.5</span>
             </div>
             <div class="version-option" onclick="selectVersion('1.1','1.1',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>1.1</span>
             </div>
             <div class="version-option" onclick="selectVersion('1.0','1.0',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>1.0</span>
             </div>
 
             <div class="version-group-label">Beta</div>
             <div class="version-option" onclick="selectVersion('beta-1.8.1-wasm','Beta 1.8.1 WASM',true)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>Beta 1.8.1</span><span class="version-badge wasm">WASM</span>
             </div>
             <div class="version-option" onclick="selectVersion('beta-1.8.1','Beta 1.8.1',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>Beta 1.8.1</span>
             </div>
             <div class="version-option" onclick="selectVersion('beta-1.7.3','Beta 1.7.3',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>Beta 1.7.3</span>
             </div>
             <div class="version-option" onclick="selectVersion('beta-1.6.4','Beta 1.6.4',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>Beta 1.6.4</span>
             </div>
             <div class="version-option" onclick="selectVersion('beta-1.5','Beta 1.5',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>Beta 1.5</span>
             </div>
             <div class="version-option" onclick="selectVersion('beta-1.4','Beta 1.4',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>Beta 1.4</span>
             </div>
             <div class="version-option" onclick="selectVersion('beta-1.3','Beta 1.3',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>Beta 1.3</span>
             </div>
             <div class="version-option" onclick="selectVersion('beta-1.2','Beta 1.2',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>Beta 1.2</span>
             </div>
             <div class="version-option" onclick="selectVersion('beta-1.1','Beta 1.1',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>Beta 1.1</span>
             </div>
             <div class="version-option" onclick="selectVersion('beta-1.0','Beta 1.0',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>Beta 1.0</span>
             </div>
 
             <div class="version-group-label">Alpha / Classic</div>
             <div class="version-option" onclick="selectVersion('alpha-1.2.6','Alpha 1.2.6',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>Alpha 1.2.6</span>
             </div>
             <div class="version-option" onclick="selectVersion('infdev-wasm','Infdev WASM',true)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>Infdev</span><span class="version-badge wasm">WASM</span>
             </div>
             <div class="version-option" onclick="selectVersion('indev','Indev',false)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>Indev</span>
             </div>
             <div class="version-option" onclick="selectVersion('classic-0.3.0-wasm','Classic 0.3.0 WASM',true)">
-              <img src="Resources/icon.png" onerror="this.style.display='none'">
+              <img src="Resources/main.png" onerror="this.style.display='none'">
               <span>Classic 0.3.0</span><span class="version-badge wasm">WASM</span>
             </div>
 
