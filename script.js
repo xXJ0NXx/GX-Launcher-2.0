@@ -1,10 +1,8 @@
 /* ============================================================
-   GX-LAUNCHER 2.0 — SHARED SCRIPT
+   GX-LAUNCHER 1.10 — SHARED SCRIPT
    ============================================================ */
 
 // ===== STORAGE HELPERS =====
-// Uses localStorage so settings persist on file:// and http:// alike.
-// Falls back to an in-memory store if localStorage is unavailable.
 const _memStore = {};
 function _lsGet(name) {
     try { return localStorage.getItem(name); } catch(e) { return _memStore[name] ?? null; }
@@ -12,7 +10,6 @@ function _lsGet(name) {
 function _lsSet(name, value) {
     try { localStorage.setItem(name, value); } catch(e) { _memStore[name] = value; }
 }
-// Keep old names so nothing else needs to change
 function getCookie(name)            { return _lsGet(name); }
 function setCookie(name, value, _d) { _lsSet(name, String(value)); }
 
@@ -67,23 +64,19 @@ const GX_DEFAULTS = {
 
 function applyTheme(name) {
     const root = document.documentElement;
-    // reset to defaults first
     for (const [k, v] of Object.entries(GX_DEFAULTS)) root.style.setProperty(k, v);
-    // apply overrides
     const t = GX_THEMES[name] || {};
     for (const [k, v] of Object.entries(t)) root.style.setProperty(k, v);
     setCookie('launcherTheme', name, 365);
-    // sync swatch UI if on settings page
     document.querySelectorAll('.theme-swatch').forEach(s => {
         s.classList.toggle('selected', s.dataset.themeName === name);
     });
 }
 
-// ===== MOD MAKER (removed) =====
-function updateNavVisibility() {} // kept as stub so old pages don't error
+function updateNavVisibility() {}
 function toggleModMaker() {}
 
-// ===== VERSION SELECTOR (used on index.html) =====
+// ===== VERSION SELECTOR =====
 let _selectedVersion = '';
 
 function toggleVersionDropdown() {
@@ -98,25 +91,19 @@ function selectVersion(path, label, isWasm) {
     _selectedVersion = path;
     const lbl = document.getElementById('version-label');
     if (lbl) lbl.textContent = label;
-    // close dropdown
     document.getElementById('version-dropdown')?.classList.remove('open');
     document.getElementById('version-select')?.classList.remove('open');
-    // enable play
     const btn = document.getElementById('play-btn');
     if (btn) btn.disabled = false;
-    // highlight active option
     document.querySelectorAll('.version-option').forEach(o => o.classList.remove('active-ver'));
     if (event && event.currentTarget) event.currentTarget.classList.add('active-ver');
-    // update mode badge
     const method = getCookie('launchMethod') || 'regular';
     const modeLabels = { regular:'REGULAR', 'about-blank':'ABOUT:BLANK', 'data-uri':'DATA URI', blob:'BLOB URL', popup:'POPUP' };
     const badge = document.getElementById('mode-badge-text');
     if (badge) badge.textContent = modeLabels[method] || method.toUpperCase();
-
     setStatus('VERSION: <span class="hl">' + label + '</span>');
 }
 
-// Close dropdown on outside click
 document.addEventListener('click', e => {
     if (!e.target.closest('.version-wrapper')) {
         document.getElementById('version-dropdown')?.classList.remove('open');
@@ -124,16 +111,101 @@ document.addEventListener('click', e => {
     }
 });
 
+// ===== WISP INJECTION =====
+
+// Checks if WISP injection is enabled in settings
+function isWispEnabled() {
+    return getCookie('wispEnabled') === 'true';
+}
+
+// Returns the configured WISP URL, or the default
+function getWispUrl() {
+    return getCookie('wispUrl') || 'wss://anura.pro/';
+}
+
+// Injects the wispcraft bundle script into a raw HTML string
+// Returns the modified HTML string
+async function injectWispIntoHtml(html) {
+    // Lazy-load the bundle from wisp-bundle.js if not already loaded
+    if (typeof getWispBundle !== 'function') {
+        await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'wisp-bundle.js';
+            s.onload = resolve;
+            s.onerror = () => reject(new Error('Failed to load wisp-bundle.js'));
+            document.head.appendChild(s);
+        });
+    }
+
+    const b64 = getWispBundle();
+    const wispUrl = getWispUrl();
+
+    // Build the injected script:
+    // 1. Sets wispcraft_wispurl in localStorage so wispcraft uses our configured server
+    // 2. Decodes and executes the wispcraft bundle
+    const injectedScript = `<script>
+(function(){
+  try { localStorage.setItem('wispcraft_wispurl', ${JSON.stringify(wispUrl)}); } catch(e){}
+  var s=document.createElement('script');
+  s.textContent=atob(${JSON.stringify(b64)});
+  document.currentScript.parentNode.insertBefore(s,document.currentScript);
+})();
+<\/script>`;
+
+    // Prepend into <head> if present, else prepend to <html>, else prepend to document
+    if (/<head[\s>]/i.test(html)) {
+        return html.replace(/(<head[^>]*>)/i, '$1\n' + injectedScript);
+    } else if (/<html[\s>]/i.test(html)) {
+        return html.replace(/(<html[^>]*>)/i, '$1\n<head>' + injectedScript + '</head>');
+    } else {
+        return injectedScript + html;
+    }
+}
+
 // ===== LAUNCH LOGIC =====
 function playGame() {
     if (!_selectedVersion) { showToast('Select a version first.', true); return; }
 
     const method = getCookie('launchMethod') || 'regular';
-    // Build absolute URL so fetch/iframe work from any context
     const relUrl = _selectedVersion + '/index.html';
     const absUrl = new URL(relUrl, location.href).href;
     const popupFeatures = 'width=1280,height=720,toolbar=0,menubar=0,location=0,status=0';
+    const wispOn = isWispEnabled();
 
+    // For modes that don't fetch HTML, WISP injection requires fetching first
+    if (wispOn && method === 'regular') {
+        // Fall through to fetch + write to about:blank since we need to inject
+        setStatus('WISP: INJECTING...');
+        _fetchWithProgress(absUrl).then(html => injectWispIntoHtml(html)).then(html => {
+            const win = window.open('', '_blank');
+            if (!win) { showToast('Popup blocked.', true); return; }
+            win.document.open();
+            win.document.write(html);
+            win.document.close();
+            setStatus('LAUNCHED WITH <span class="hl">WISP</span>');
+        }).catch(err => {
+            showToast('Wisp inject failed: ' + err.message, true);
+            setStatus('WISP ERROR');
+        });
+        return;
+    }
+
+    if (wispOn && method === 'popup') {
+        setStatus('WISP: INJECTING...');
+        _fetchWithProgress(absUrl).then(html => injectWispIntoHtml(html)).then(html => {
+            const blob = new Blob([html], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            const w = window.open(blobUrl, '_blank', popupFeatures);
+            if (!w) showToast('Popup blocked — allow popups for this site.', true);
+            setStatus('LAUNCHED WITH <span class="hl">WISP + POPUP</span>');
+        }).catch(err => {
+            showToast('Wisp inject failed: ' + err.message, true);
+            setStatus('WISP ERROR');
+        });
+        return;
+    }
+
+    // Standard (non-WISP) launches
     if (method === 'regular') {
         window.open(absUrl, '_blank');
 
@@ -142,14 +214,17 @@ function playGame() {
         if (!w) showToast('Popup blocked — allow popups for this site.', true);
 
     } else if (method === 'about-blank') {
-        // Fetch game HTML and write it directly — no iframe
         _fetchWithProgress(absUrl).then(html => {
+            return wispOn ? injectWispIntoHtml(html) : html;
+        }).then(html => {
             const win = window.open('', '_blank');
             if (!win) { showToast('Popup blocked.', true); return; }
             win.document.open();
             win.document.write(html);
             win.document.close();
-            setStatus('LAUNCHED AS <span class="hl">ABOUT:BLANK</span>');
+            setStatus(wispOn
+                ? 'LAUNCHED AS <span class="hl">ABOUT:BLANK + WISP</span>'
+                : 'LAUNCHED AS <span class="hl">ABOUT:BLANK</span>');
         }).catch(err => {
             showToast('Fetch failed: ' + err.message, true);
             setStatus('FETCH ERROR');
@@ -157,19 +232,20 @@ function playGame() {
 
     } else if (method === 'blob') {
         _fetchWithProgress(absUrl).then(html => {
+            return wispOn ? injectWispIntoHtml(html) : html;
+        }).then(html => {
             const blob    = new Blob([html], { type: 'text/html' });
             const blobUrl = URL.createObjectURL(blob);
             window.open(blobUrl, '_blank');
-            setStatus('LAUNCHED AS <span class="hl">BLOB URL</span>');
+            setStatus(wispOn
+                ? 'LAUNCHED AS <span class="hl">BLOB + WISP</span>'
+                : 'LAUNCHED AS <span class="hl">BLOB URL</span>');
         }).catch(err => {
             showToast('Fetch failed: ' + err.message, true);
             setStatus('FETCH ERROR');
         });
 
     } else if (method === 'data-uri') {
-        // Build a self-contained loader page, encode it as a data: URI, and copy to clipboard.
-        // When pasted into the address bar, the page fetches the game from the CDN itself —
-        // no pre-fetching needed, works from any context.
         try {
             const folder  = _selectedVersion.split('/').map(encodeURIComponent).join('/');
             const cdnBase = 'https://raw.githack.com/xXJ0NXx/GX-Launcher/main/' + folder + '/';
@@ -216,8 +292,8 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:mon
     const html=new TextDecoder().decode(merged);
     const baseTag='<base href="${cdnBase}">';
     let patched;
-    if(/<head[\s>]/i.test(html)){patched=html.replace(/(<head[^>]*>)/i,'$1\\n'+baseTag);}
-    else if(/<html[\s>]/i.test(html)){patched=html.replace(/(<html[^>]*>)/i,'$1\\n<head>'+baseTag+'</head>');}
+    if(/<head[\s>]/i.test(html)){patched=html.replace(/(<head[^>]*>)/i,'$1\n'+baseTag);}
+    else if(/<html[\s>]/i.test(html)){patched=html.replace(/(<html[^>]*>)/i,'$1\n<head>'+baseTag+'</head>');}
     else{patched=baseTag+html;}
     document.open();
     document.write(patched);
@@ -246,7 +322,6 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:mon
 }
 
 function _showDataUriSplash(copied) {
-    // Remove any existing splash
     document.getElementById('_gx_uri_splash')?.remove();
     const overlay = document.createElement('div');
     overlay.id = '_gx_uri_splash';
@@ -306,7 +381,6 @@ function _showDataUriSplash(copied) {
         </div>
     `;
     document.body.appendChild(overlay);
-    // Auto-dismiss after 15s
     setTimeout(() => overlay?.remove(), 15000);
 }
 
@@ -342,7 +416,7 @@ function _fetchWithProgress(url) {
     }).catch(err => { hideLoading(); throw err; });
 }
 
-// ===== NAVIGATION HELPERS (kept for backward compat) =====
+// ===== NAVIGATION HELPERS =====
 function redirectToNews()         { window.location.href = 'news.html'; }
 function redirectToClients()      { window.location.href = 'clients.html'; }
 function redirectToServers()      { window.location.href = 'servers.html'; }
@@ -390,7 +464,50 @@ function selectLaunchMode(mode, el) {
     showToast('Launch mode: ' + (labels[mode] || mode));
 }
 
-// ===== DOM READY — runs on every page =====
+// Toggle WISP on/off from settings
+function toggleWisp(enabled) {
+    setCookie('wispEnabled', enabled ? 'true' : 'false', 365);
+    const toggle = document.getElementById('wisp-toggle');
+    const status = document.getElementById('wisp-status-text');
+    const urlRow = document.getElementById('wisp-url-row');
+    if (toggle) toggle.checked = enabled;
+    if (status) {
+        status.textContent = enabled ? 'ENABLED' : 'DISABLED';
+        status.className = 'wisp-status-badge ' + (enabled ? 'on' : 'off');
+    }
+    if (urlRow) urlRow.style.opacity = enabled ? '1' : '0.45';
+    showToast('WISP injection ' + (enabled ? 'enabled' : 'disabled'));
+}
+
+// Save WISP URL from settings input
+function saveWispUrl() {
+    const input = document.getElementById('wisp-url-input');
+    if (!input) return;
+    const val = input.value.trim();
+    if (!val) {
+        showToast('Enter a WISP server URL.', true);
+        return;
+    }
+    try {
+        const u = new URL(val);
+        if (!u.protocol.startsWith('ws')) throw new Error('Must start with ws:// or wss://');
+    } catch(e) {
+        showToast('Invalid URL: ' + e.message, true);
+        return;
+    }
+    setCookie('wispUrl', val, 365);
+    showToast('WISP server saved.');
+}
+
+function resetWispUrl() {
+    const def = 'wss://anura.pro/';
+    setCookie('wispUrl', def, 365);
+    const input = document.getElementById('wisp-url-input');
+    if (input) input.value = def;
+    showToast('Reset to default WISP server.');
+}
+
+// ===== DOM READY =====
 document.addEventListener('DOMContentLoaded', () => {
 
     // Apply saved username
@@ -413,4 +530,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const badge = document.getElementById('mode-badge-text');
     const modeLabels = { regular:'REGULAR', 'about-blank':'ABOUT:BLANK', 'data-uri':'DATA URI', blob:'BLOB URL', popup:'POPUP' };
     if (badge) badge.textContent = modeLabels[savedMode] || savedMode.toUpperCase();
+
+    // Restore WISP settings on settings page
+    const wispEnabled = isWispEnabled();
+    const toggle = document.getElementById('wisp-toggle');
+    const status = document.getElementById('wisp-status-text');
+    const urlRow = document.getElementById('wisp-url-row');
+    const urlInput = document.getElementById('wisp-url-input');
+    if (toggle) toggle.checked = wispEnabled;
+    if (status) {
+        status.textContent = wispEnabled ? 'ENABLED' : 'DISABLED';
+        status.className = 'wisp-status-badge ' + (wispEnabled ? 'on' : 'off');
+    }
+    if (urlRow) urlRow.style.opacity = wispEnabled ? '1' : '0.45';
+    if (urlInput) urlInput.value = getWispUrl();
 });

@@ -7,6 +7,109 @@
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="styles.css">
   <script src="script.js" defer></script>
+  <style>
+    /* ── WISP SECTION ── */
+    .wisp-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* Toggle switch */
+    .toggle-wrap {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    .toggle-wrap input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      top: 3px;
+      background: #666;
+      border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .toggle-wrap input:checked + .toggle-slider {
+      background: var(--accent-dim, #7a0000);
+      border-color: var(--accent, #cc0000);
+    }
+    .toggle-wrap input:checked + .toggle-slider::before {
+      transform: translateX(20px);
+      background: var(--accent, #cc0000);
+      box-shadow: 0 0 6px var(--accent-glow, rgba(180,0,0,0.4));
+    }
+
+    .wisp-status-badge {
+      font-size: 10px;
+      font-family: 'Segoe UI', sans-serif;
+      letter-spacing: 0.12em;
+      padding: 2px 8px;
+      border-radius: 2px;
+      font-weight: 600;
+    }
+    .wisp-status-badge.on  { background: rgba(0,180,60,0.15); color: #00cc44; border: 1px solid #00cc4444; }
+    .wisp-status-badge.off { background: rgba(120,120,120,0.1); color: #666; border: 1px solid #33333388; }
+
+    .wisp-url-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      transition: opacity 0.2s;
+    }
+    .wisp-url-row .settings-input {
+      flex: 1;
+      min-width: 220px;
+    }
+    .settings-btn-ghost {
+      background: transparent;
+      border: 1px solid #444;
+      color: #888;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 11px;
+      padding: 6px 14px;
+      cursor: pointer;
+      letter-spacing: 0.08em;
+      transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .settings-btn-ghost:hover {
+      border-color: var(--accent, #cc0000);
+      color: var(--accent, #cc0000);
+    }
+
+    .wisp-compat-note {
+      font-size: 10px;
+      color: #555;
+      font-family: 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      padding: 8px 12px;
+      border-left: 2px solid #2a2a2a;
+      margin-top: 4px;
+    }
+    .wisp-compat-note span {
+      color: var(--accent, #cc0000);
+    }
+  </style>
 </head>
 <body>
 
@@ -16,7 +119,7 @@
   <div class="title-bar">
     <div class="title-logo">
       <div class="title-dot"></div>
-      GX-LAUNCHER <span class="ver">v2.0</span>
+      GX-LAUNCHER <span class="ver">Release 1.10</span>
     </div>
   </div>
 
@@ -54,7 +157,7 @@
       </nav>
       <div class="sidebar-bottom">
         <div class="nav-item selected">
-                  <svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
           Launcher Settings
         </div>
       </div>
@@ -125,11 +228,11 @@
             </div>
             <div class="mode-card" data-mode="about-blank" onclick="selectLaunchMode('about-blank', this)">
               <div class="mode-card-title">About:Blank</div>
-              <div class="mode-card-desc">Opens about:blank then writes the game into a full-screen iframe. Bypasses some URL filters.</div>
+              <div class="mode-card-desc">Opens about:blank then writes the game into a full-screen page. Bypasses some URL filters.</div>
             </div>
             <div class="mode-card" data-mode="data-uri" onclick="selectLaunchMode('data-uri', this)">
               <div class="mode-card-title">Data URI</div>
-              <div class="mode-card-desc">Base64 encodes a game fetch code then copys it to your clip board. Bookmarkable.</div>
+              <div class="mode-card-desc">Base64 encodes a game fetch code then copies it to your clipboard. Bookmarkable.</div>
             </div>
             <div class="mode-card" data-mode="blob" onclick="selectLaunchMode('blob', this)">
               <div class="mode-card-title">Blob URL</div>
@@ -141,6 +244,45 @@
             </div>
           </div>
         </div>
+
+        <!-- WISP INJECTION -->
+        <div class="settings-section">
+          <div class="settings-section-title">WISP Injection</div>
+
+          <!-- Toggle row -->
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Enable WISP Injection</div>
+              <div class="settings-desc">Injects the Wispcraft patch into supported Eaglercraft clients before launch, allowing you to join real online-mode Minecraft servers from the browser.</div>
+            </div>
+            <div class="wisp-toggle-row">
+              <label class="toggle-wrap">
+                <input type="checkbox" id="wisp-toggle" onchange="toggleWisp(this.checked)">
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="wisp-status-badge off" id="wisp-status-text">DISABLED</span>
+            </div>
+          </div>
+
+          <!-- WISP URL row -->
+          <div class="settings-row" id="wisp-url-row" style="opacity:0.45;">
+            <div>
+              <div class="settings-label">WISP Server URL</div>
+              <div class="settings-desc">WebSocket URL of the WISP proxy server. Default: wss://anura.pro/</div>
+            </div>
+            <div class="wisp-url-row">
+              <input class="settings-input" id="wisp-url-input" type="text" placeholder="wss://anura.pro/" spellcheck="false" autocomplete="off">
+              <button class="settings-btn" onclick="saveWispUrl()">Save</button>
+              <button class="settings-btn-ghost" onclick="resetWispUrl()">Reset</button>
+            </div>
+          </div>
+
+          <!-- Compatibility note -->
+          <div class="wisp-compat-note">
+            <span>Compatible clients:</span> EaglercraftX 1.8 and other EaglercraftX .html clients that use the standard <code>eaglercraftXOpts</code> / WebSocket API. Not compatible with Data URI launch mode.
+          </div>
+        </div>
+
       </div><!-- /settings-scroll -->
 
       <div class="bottom-bar">
