@@ -96,6 +96,11 @@
       border-color: var(--accent, #cc0000);
       color: var(--accent, #cc0000);
     }
+    .settings-btn-ghost.selected {
+      border-color: var(--accent, #cc0000);
+      color: var(--accent, #cc0000);
+      background: var(--accent-glow, rgba(180,0,0,0.18));
+    }
 
     .wisp-compat-note {
       font-size: 10px;
@@ -109,6 +114,7 @@
     .wisp-compat-note span {
       color: var(--accent, #cc0000);
     }
+
   </style>
 </head>
 <body>
@@ -195,18 +201,11 @@
               <div class="settings-label">UI Scale</div>
               <div class="settings-desc">Adjusts the size of all text and UI elements across the launcher.</div>
             </div>
-            <div style="display:flex;gap:12px;align-items:center;min-width:220px;">
-              <input
-                id="ui-scale-slider"
-                type="range"
-                min="0.7"
-                max="1.5"
-                step="0.05"
-                value="1"
-                style="flex:1;accent-color:var(--accent);cursor:pointer;"
-                oninput="saveUiScale(parseFloat(this.value))"
-              >
-              <span id="ui-scale-label" style="font-family:var(--mono);font-size:11px;color:var(--accent);min-width:36px;text-align:right;letter-spacing:0.08em;">100%</span>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <button class="settings-btn-ghost" data-scale="0.75" onclick="saveUiScale(0.75, this)">75%</button>
+              <button class="settings-btn-ghost" data-scale="1"    onclick="saveUiScale(1,    this)">100%</button>
+              <button class="settings-btn-ghost" data-scale="1.25" onclick="saveUiScale(1.25, this)">125%</button>
+              <button class="settings-btn-ghost" data-scale="1.5"  onclick="saveUiScale(1.5,  this)">150%</button>
             </div>
           </div>
         </div>

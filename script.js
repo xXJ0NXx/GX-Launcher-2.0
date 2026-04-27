@@ -162,6 +162,54 @@ async function injectWispIntoHtml(html) {
     }
 }
 
+// ===== SERVER INJECTION =====
+const GX_SERVERS = [
+    { name: "mc.arch.lol",                    addr: "mc.arch.lol" },
+    { name: "Zentic",                          addr: "wss://zentic.cc" },
+    { name: "Zyth",                            addr: "wss://mc.zyth.me" },
+    { name: "AsianF4rmer",                     addr: "wss://asianf4rmer.minecraft.pe" },
+    { name: "shhnowisnottheti.me",             addr: "wss://sus.shhnowisnottheti.me" },
+    { name: "Aeon Network",                    addr: "wss://aeon-network.net/1.8" },
+    { name: "Adderall",                        addr: "wss://adderall.ir" },
+    { name: "Lamp Lifesteal",                  addr: "wss://mc.lamplifesteal.xyz" },
+    { name: "VanillaMC",                       addr: "wss://vanillamc.org" },
+    { name: "Voidsent",                        addr: "wss://mc.voidsent.net" },
+    { name: "Dumbshit Survival X",             addr: "wss://mc.dssx.uk" },
+    { name: "Mytheria MC",                     addr: "wss://play.mytheriamc.net" },
+    { name: "CMC",                             addr: "wss://cmc.tf" },
+];
+
+function injectServersIntoHtml(html) {
+    const injection = `<script>
+(function(){
+  var toAdd = ${JSON.stringify(GX_SERVERS)};
+  function doInject() {
+    var existing = (window.eaglercraftXOpts && window.eaglercraftXOpts.servers) || [];
+    var existingAddrs = existing.map(function(s){ return s.addr; });
+    toAdd.forEach(function(s){
+      if (existingAddrs.indexOf(s.addr) === -1) existing.push(s);
+    });
+    if (window.eaglercraftXOpts) window.eaglercraftXOpts.servers = existing;
+  }
+  if (window.eaglercraftXOpts) {
+    doInject();
+  } else {
+    var poll = setInterval(function(){
+      if (window.eaglercraftXOpts) { clearInterval(poll); doInject(); }
+    }, 50);
+  }
+})();
+<\/script>`;
+
+    if (/<head[\s>]/i.test(html)) {
+        return html.replace(/(<head[^>]*>)/i, '$1\n' + injection);
+    } else if (/<html[\s>]/i.test(html)) {
+        return html.replace(/(<html[^>]*>)/i, '$1\n<head>' + injection + '</head>');
+    } else {
+        return injection + html;
+    }
+}
+
 // ===== LAUNCH LOGIC =====
 function playGame() {
     if (!_selectedVersion) { showToast('Select a version first.', true); return; }
@@ -182,7 +230,7 @@ function playGame() {
 
     if (wispOn && method === 'popup') {
         setStatus('WISP: INJECTING...');
-        _fetchWithProgress(absUrl).then(html => injectWispIntoHtml(html)).then(html => {
+        _fetchWithProgress(absUrl).then(html => injectWispIntoHtml(html)).then(html => injectServersIntoHtml(html)).then(html => {
             const blob = new Blob([html], { type: 'text/html' });
             const blobUrl = URL.createObjectURL(blob);
             const w = window.open(blobUrl, '_blank', popupFeatures);
@@ -207,6 +255,8 @@ function playGame() {
         _fetchWithProgress(absUrl).then(html => {
             return wispOn ? injectWispIntoHtml(html) : html;
         }).then(html => {
+            return injectServersIntoHtml(html);
+        }).then(html => {
             const win = window.open('', '_blank');
             if (!win) { showToast('Popup blocked.', true); return; }
             win.document.open();
@@ -223,6 +273,8 @@ function playGame() {
     } else if (method === 'blob') {
         _fetchWithProgress(absUrl).then(html => {
             return wispOn ? injectWispIntoHtml(html) : html;
+        }).then(html => {
+            return injectServersIntoHtml(html);
         }).then(html => {
             const blob    = new Blob([html], { type: 'text/html' });
             const blobUrl = URL.createObjectURL(blob);
@@ -441,21 +493,21 @@ function saveUsername() {
 
 function applyUiScale(scale) {
     document.documentElement.style.setProperty('--ui-scale', scale);
-    const label = document.getElementById('ui-scale-label');
-    if (label) label.textContent = Math.round(scale * 100) + '%';
+    document.querySelectorAll('[data-scale]').forEach(btn => {
+        btn.classList.toggle('selected', parseFloat(btn.dataset.scale) === scale);
+    });
 }
 
 function saveUiScale(scale) {
     applyUiScale(scale);
     setCookie('uiScale', scale, 365);
+    showToast('UI scale: ' + Math.round(scale * 100) + '%');
 }
 
 function loadUiScale() {
     const saved = parseFloat(getCookie('uiScale'));
-    const scale = (!isNaN(saved) && saved >= 0.7 && saved <= 1.5) ? saved : 1;
+    const scale = (!isNaN(saved)) ? saved : 1;
     applyUiScale(scale);
-    const slider = document.getElementById('ui-scale-slider');
-    if (slider) slider.value = scale;
 }
 
 function applyThemeFromSwatch(name, el) {
