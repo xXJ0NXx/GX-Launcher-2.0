@@ -220,10 +220,27 @@ function playGame() {
     const popupFeatures = 'width=1280,height=720,toolbar=0,menubar=0,location=0,status=0';
     const wispOn = isWispEnabled();
 
-    // Regular mode always navigates directly to the URL
+    // Regular mode: if WISP is on, fetch+inject then open as blob; otherwise navigate directly
     if (method === 'regular') {
-        window.open(absUrl, '_blank');
-        setStatus('LAUNCHED');
+        if (wispOn) {
+            setStatus('WISP: INJECTING...');
+            _fetchWithProgress(absUrl)
+                .then(html => injectWispIntoHtml(html))
+                .then(html => injectServersIntoHtml(html))
+                .then(html => {
+                    const blob = new Blob([html], { type: 'text/html' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    window.open(blobUrl, '_blank');
+                    setStatus('LAUNCHED WITH <span class="hl">WISP</span>');
+                })
+                .catch(err => {
+                    showToast('Wisp inject failed: ' + err.message, true);
+                    setStatus('WISP ERROR');
+                });
+        } else {
+            window.open(absUrl, '_blank');
+            setStatus('LAUNCHED');
+        }
         return;
     }
 
