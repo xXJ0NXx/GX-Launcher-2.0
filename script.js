@@ -220,27 +220,14 @@ function playGame() {
     const popupFeatures = 'width=1280,height=720,toolbar=0,menubar=0,location=0,status=0';
     const wispOn = isWispEnabled();
 
-    // Regular mode: if WISP is on, fetch+inject then open as blob; otherwise navigate directly
+    // Regular mode: always open the real URL directly.
+    // WISP injection requires fetching/rewriting HTML and is not compatible with regular mode.
     if (method === 'regular') {
         if (wispOn) {
-            setStatus('WISP: INJECTING...');
-            _fetchWithProgress(absUrl)
-                .then(html => injectWispIntoHtml(html))
-                .then(html => injectServersIntoHtml(html))
-                .then(html => {
-                    const blob = new Blob([html], { type: 'text/html' });
-                    const blobUrl = URL.createObjectURL(blob);
-                    window.open(blobUrl, '_blank');
-                    setStatus('LAUNCHED WITH <span class="hl">WISP</span>');
-                })
-                .catch(err => {
-                    showToast('Wisp inject failed: ' + err.message, true);
-                    setStatus('WISP ERROR');
-                });
-        } else {
-            window.open(absUrl, '_blank');
-            setStatus('LAUNCHED');
+            showToast('WISP injection is not supported in Regular mode — use Blob or About:Blank instead.', true);
         }
+        window.open(absUrl, '_blank');
+        setStatus('LAUNCHED');
         return;
     }
 
@@ -254,8 +241,10 @@ function playGame() {
             if (!w) showToast('Popup blocked — allow popups for this site.', true);
             setStatus('LAUNCHED WITH <span class="hl">WISP + POPUP</span>');
         }).catch(err => {
-            showToast('Wisp inject failed: ' + err.message, true);
-            setStatus('WISP ERROR');
+            showToast('WISP failed (' + err.message + ') — launching without WISP.', true);
+            setStatus('WISP ERROR — LAUNCHING WITHOUT WISP');
+            const w = window.open(absUrl, '_blank', popupFeatures);
+            if (!w) showToast('Popup blocked — allow popups for this site.', true);
         });
         return;
     }
@@ -283,8 +272,24 @@ function playGame() {
                 ? 'LAUNCHED AS <span class="hl">ABOUT:BLANK + WISP</span>'
                 : 'LAUNCHED AS <span class="hl">ABOUT:BLANK</span>');
         }).catch(err => {
-            showToast('Fetch failed: ' + err.message, true);
-            setStatus('FETCH ERROR');
+            if (wispOn) {
+                showToast('WISP failed (' + err.message + ') — launching without WISP.', true);
+                setStatus('WISP ERROR — LAUNCHING WITHOUT WISP');
+                _fetchWithProgress(absUrl).then(html => injectServersIntoHtml(html)).then(html => {
+                    const win = window.open('', '_blank');
+                    if (!win) { showToast('Popup blocked.', true); return; }
+                    win.document.open();
+                    win.document.write(html);
+                    win.document.close();
+                    setStatus('LAUNCHED AS <span class="hl">ABOUT:BLANK</span>');
+                }).catch(err2 => {
+                    showToast('Fetch failed: ' + err2.message, true);
+                    setStatus('FETCH ERROR');
+                });
+            } else {
+                showToast('Fetch failed: ' + err.message, true);
+                setStatus('FETCH ERROR');
+            }
         });
 
     } else if (method === 'blob') {
@@ -300,8 +305,22 @@ function playGame() {
                 ? 'LAUNCHED AS <span class="hl">BLOB + WISP</span>'
                 : 'LAUNCHED AS <span class="hl">BLOB URL</span>');
         }).catch(err => {
-            showToast('Fetch failed: ' + err.message, true);
-            setStatus('FETCH ERROR');
+            if (wispOn) {
+                showToast('WISP failed (' + err.message + ') — launching without WISP.', true);
+                setStatus('WISP ERROR — LAUNCHING WITHOUT WISP');
+                _fetchWithProgress(absUrl).then(html => injectServersIntoHtml(html)).then(html => {
+                    const blob = new Blob([html], { type: 'text/html' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    window.open(blobUrl, '_blank');
+                    setStatus('LAUNCHED AS <span class="hl">BLOB URL</span>');
+                }).catch(err2 => {
+                    showToast('Fetch failed: ' + err2.message, true);
+                    setStatus('FETCH ERROR');
+                });
+            } else {
+                showToast('Fetch failed: ' + err.message, true);
+                setStatus('FETCH ERROR');
+            }
         });
 
     } else if (method === 'data-uri') {
